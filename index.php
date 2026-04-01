@@ -108,14 +108,13 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MAYA Dashboard - Supervision Ruches</title>
+    <title>MAYA Dashboard</title>
     <meta http-equiv="refresh" content="180">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #f4f6f8; --card-bg: #ffffff; --text-color: #31333F; --sidebar-bg: #ffffff;
             --amber: #F59E0B; --border: 1px solid rgba(245, 158, 11, 0.2); --shadow: 0 4px 6px rgba(0,0,0,0.05);
-            --sidebar-width: 280px;
         }
         [data-theme="dark"] {
             --bg-color: #0e1117; --card-bg: #1e1e24; --text-color: #FAFAFA; --sidebar-bg: #16161a;
@@ -125,52 +124,47 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         html, body { margin: 0; padding: 0; width: 100%; min-height: 100vh; overflow-x: hidden; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-color); color: var(--text-color); transition: background 0.3s; }
         h1, h2, h3, h4 { color: var(--amber); margin-top: 0; }
         
-        /* 🌟 TOPBAR FIXÉE ET RÉACTIVE 🌟 */
+        /* 🌟 TOPBAR FIXÉE 🌟 */
         .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: var(--card-bg); border-bottom: var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 2000; box-shadow: var(--shadow); box-sizing: border-box; }
         .topbar-left { display: flex; align-items: center; gap: 15px; }
-        .menu-btn { font-size: 1.8rem; cursor: pointer; background: none; border: none; color: var(--text-color); padding: 5px; outline: none; }
+        .menu-btn { font-size: 1.8rem; cursor: pointer; background: none; border: none; color: var(--text-color); padding: 5px; outline: none; transition: 0.2s; }
+        .menu-btn:hover { transform: scale(1.1); }
         
-        /* 🌟 SIDEBAR RÉPARÉE ET RESPONSIVE 🌟 */
-        .sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: var(--sidebar-width); background: var(--sidebar-bg); border-right: var(--border); padding: 20px; box-sizing: border-box; overflow-y: auto; z-index: 1500; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .main { margin-top: 60px; margin-left: var(--sidebar-width); padding: 30px; box-sizing: border-box; min-height: calc(100vh - 60px); transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-x: hidden; }
+        /* 🌟 LAYOUT CORRIGÉ (SANS FLEXBOX SUR .LAYOUT) 🌟 */
+        .layout { display: block; margin-top: 60px; min-height: calc(100vh - 60px); width: 100%; }
+        
+        .sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: 280px; background: var(--sidebar-bg); border-right: var(--border); padding: 20px; box-sizing: border-box; overflow-y: auto; z-index: 1500; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(0); }
+        .main { display: block; margin-left: 280px; width: calc(100% - 280px); padding: 30px; box-sizing: border-box; min-height: calc(100vh - 60px); transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-x: hidden; }
         .sidebar-overlay { display: none; position: fixed; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px); background: rgba(0,0,0,0.5); z-index: 1400; opacity: 0; transition: opacity 0.3s; }
         
-        /* RESPONSIVE DESIGN */
         @media (min-width: 992px) { 
-            .sidebar.collapsed { transform: translateX(-var(--sidebar-width)); } 
-            .main.expanded { margin-left: 0; } 
+            .sidebar.collapsed { transform: translateX(-100%); } 
+            .main.expanded { margin-left: 0; width: 100%; } 
         }
         @media (max-width: 991px) {
-            .sidebar { transform: translateX(-100%); width: 260px; --sidebar-width: 260px; }
+            .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); box-shadow: 4px 0 15px rgba(0,0,0,0.2); }
-            .main { margin-left: 0; padding: 15px; }
+            .main { margin-left: 0; width: 100%; padding: 15px; }
             .sidebar-overlay.active { display: block; opacity: 1; }
             .user-name { display: none; }
-            .metrics-grid { grid-template-columns: repeat(2, 1fr) !important; } /* 2 cartes par ligne sur tablette */
-        }
-        @media (max-width: 576px) {
-            .main { padding: 10px; }
-            .topbar { padding: 0 10px; }
-            .topbar-left { gap: 8px; }
-            .menu-btn { font-size: 1.5rem; }
-            .metrics-grid { grid-template-columns: 1fr !important; } /* 1 carte par ligne sur mobile */
             .st-tabs { flex-wrap: wrap; gap: 5px; }
             .st-tab { flex-grow: 1; text-align: center; padding: 8px 5px; font-size: 0.9rem; }
-            .modal-content { max-width: 100%; }
         }
 
-        .st-input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border-radius: 6px; border: 1px solid #ccc; background: var(--bg-color); color: var(--text-color); box-sizing: border-box;}
+        .st-input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border-radius: 6px; border: 1px solid #ccc; background: var(--bg-color); color: var(--text-color); box-sizing: border-box; transition: 0.3s; }
+        .st-input:focus { border-color: var(--amber); outline: none; box-shadow: 0 0 5px rgba(245, 158, 11, 0.3); }
         .st-button { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--amber); background: transparent; color: var(--text-color); font-weight: bold; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
-        .st-button:hover { background: var(--amber); color: white; transform: scale(1.02); }
+        .st-button:hover { background: var(--amber); color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2); }
         
-        /* ANIMATIONS CSS */
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInRight { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes spinSync { 100% { transform: rotate(360deg); } }
         
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .btn-sync { background: var(--card-bg); border: var(--border); border-radius: 8px; cursor: pointer; font-size: 1.4rem; transition: 0.3s; padding: 10px; box-shadow: var(--shadow); }
+        .btn-sync:hover { color: var(--amber); animation: spinSync 1s linear infinite; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
         
-        /* 🌟 CARTES CLIQUABLES AMÉLIORÉES 🌟 */
         .metric-card { 
             background: var(--card-bg); border: var(--border); border-radius: 12px; padding: 25px; 
             box-shadow: var(--shadow); position: relative; overflow: hidden;
@@ -184,23 +178,21 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         .metric-card:nth-child(3) { animation-delay: 0.3s; }
         .metric-card:nth-child(4) { animation-delay: 0.4s; }
 
-        .metric-value { font-size: 2.2rem; font-weight: 900; color: var(--amber); margin: 10px 0 0 0; }
+        .metric-value { font-size: 2.2rem; font-weight: 900; color: var(--amber); margin: 10px 0 0 0; transition: 0.3s; }
         
         .alert-danger { border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
         .alert-warning { border: 2px solid #f59e0b; background: rgba(245, 158, 11, 0.05); }
 
-        .st-tabs { display: flex; border-bottom: 2px solid rgba(245, 158, 11, 0.2); margin-bottom: 20px; gap: 10px; border-bottom: 2px solid rgba(245, 158, 11, 0.2); }
-        .st-tab { padding: 10px; cursor: pointer; color: var(--text-color); font-weight: bold; opacity: 0.6; border-bottom: 3px solid transparent; transition: 0.2s; white-space: nowrap; }
-        .st-tab:hover { opacity: 1; color: var(--amber); }
-        .st-tab.active { color: var(--amber); border-bottom-color: var(--amber); opacity: 1; }
+        .st-tabs { display: flex; border-bottom: 2px solid rgba(245, 158, 11, 0.2); margin-bottom: 25px; gap: 10px; }
+        .st-tab { padding: 10px; cursor: pointer; color: var(--text-color); font-weight: bold; opacity: 0.6; border-bottom: 3px solid transparent; transition: 0.3s; }
+        .st-tab:hover { opacity: 1; transform: translateY(-2px); }
+        .st-tab.active { color: var(--amber); border-bottom-color: var(--amber); opacity: 1; transform: none; }
         .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .chart-container { background: var(--card-bg); border: var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow); margin-bottom: 20px; width: 100%; box-sizing: border-box; overflow: hidden; opacity: 0; animation: fadeSlideUp 0.6s forwards; animation-delay: 0.4s;}
-        
-        /* 🌟 FILTRES MODERNES (CHIPS) 🌟 */
-        .modern-filters-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; margin-bottom: 15px; animation: fadeSlideUp 0.6s forwards; animation-delay: 0.3s; opacity: 0;}
+        /* 🌟 FILTRES MODERNES 🌟 */
+        .modern-filters-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; margin-bottom: 25px; animation: fadeSlideUp 0.6s forwards; animation-delay: 0.3s; opacity: 0; background: var(--card-bg); border: var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); box-sizing: border-box;}
         .modern-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .filter-chip {
             background: var(--bg-color); border: 2px solid transparent; color: var(--text-color);
@@ -214,21 +206,32 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         .chip-icon { display: inline-block; transition: 0.3s; }
         .filter-chip.active .chip-icon { transform: scale(1.2); }
 
-        /* FENÊTRE MODALE (POP-UP) */
+        /* 🌟 GRAPHIQUES CORRIGÉS (DISPLAY NONE POUR DISPARAITRE VRAIMENT) 🌟 */
+        .chart-wrapper { 
+            background: var(--card-bg); border: var(--border); border-radius: 12px; padding: 25px; 
+            box-shadow: var(--shadow); margin-bottom: 25px; width: 100%; box-sizing: border-box; 
+            overflow: hidden; opacity: 0; animation: fadeSlideUp 0.6s forwards; 
+        }
+        .chart-wrapper:nth-child(2) { animation-delay: 0.4s; }
+        .chart-wrapper:nth-child(3) { animation-delay: 0.5s; }
+        .chart-wrapper:nth-child(4) { animation-delay: 0.6s; }
+        
+        .chart-hidden { display: none !important; }
+
         .modal { display: none; position: fixed; z-index: 4000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s ease; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
         .modal.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--card-bg); padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; border: var(--border); box-shadow: 0 15px 30px rgba(0,0,0,0.3); transform: scale(0.8) translateY(30px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-content { background-color: var(--card-bg); padding: 30px; border-radius: 16px; width: 100%; max-width: 450px; border: var(--border); box-shadow: 0 15px 30px rgba(0,0,0,0.3); transform: scale(0.8) translateY(30px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .modal.show .modal-content { transform: scale(1) translateY(0); opacity: 1; }
         .close-btn { float: right; font-size: 1.8rem; font-weight: bold; cursor: pointer; color: var(--text-color); opacity: 0.5; transition: 0.2s; line-height: 1; margin-top: -5px; }
-        .close-btn:hover { opacity: 1; color: var(--amber); }
+        .close-btn:hover { opacity: 1; color: var(--amber); transform: rotate(90deg); }
 
         #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 5000; right: 30px; bottom: 30px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: opacity 0.3s, bottom 0.3s; opacity: 0; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
         #toast.success { background-color: #10b981; }
         #toast.error { background-color: #ef4444; }
 
-        details { background: var(--card-bg); border: var(--border); border-radius: 8px; margin-bottom: 15px; }
-        summary { padding: 15px; cursor: pointer; font-weight: bold; color: var(--amber); outline: none; list-style: none; }
+        details { background: var(--card-bg); border: var(--border); border-radius: 8px; margin-bottom: 15px; transition: 0.3s; }
+        summary { padding: 15px; cursor: pointer; font-weight: bold; color: var(--amber); outline: none; list-style: none; transition: 0.3s; }
         summary::-webkit-details-marker { display: none; }
         summary::before { content: '➕ '; }
         details[open] summary::before { content: '➖ '; }
@@ -244,8 +247,8 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
             <span class="user-name" style="font-weight: bold; opacity: 0.8;">👤 <?= htmlspecialchars($_SESSION['nom'] ?? 'Apiculteur') ?></span>
-            <button onclick="toggleTheme()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;" title="Mode Sombre/Clair">🌓</button>
-            <form method="POST" style="margin:0;"><button type="submit" name="logout" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">Déco.</button></form>
+            <button onclick="toggleTheme()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(15deg)'" onmouseout="this.style.transform='rotate(0deg)'" title="Mode Sombre/Clair">🌓</button>
+            <form method="POST" style="margin:0;"><button type="submit" name="logout" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; transition:0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Déco.</button></form>
         </div>
     </div>
 
@@ -298,14 +301,17 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                 <h1 style="animation: slideInRight 0.5s;">Bienvenue ! 👋</h1>
                 <p style="animation: slideInRight 0.6s;">Ouvrez le menu (☰) et ajoutez votre première ruche.</p>
             <?php else: ?>
-                <div style="display:flex; align-items:center; justify-content:space-between; animation: slideInRight 0.4s; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; animation: slideInRight 0.4s; flex-wrap: wrap; gap: 10px; margin-bottom: 25px;">
                     <div>
-                        <h1 style="margin: 0; font-size: 2.2rem;"><?= htmlspecialchars($ruche_active['nom_affichage']) ?></h1>
-                        <p style="opacity: 0.7; margin-top: 0; font-size: 0.95rem;">ID: <?= htmlspecialchars($ruche_active['device_id']) ?> | MàJ : <b><?= $data['date'] ?></b></p>
+                        <h1 style="margin: 0; font-size: 2.5rem; color: var(--amber);"><?= htmlspecialchars($ruche_active['nom_affichage']) ?></h1>
+                        <p style="opacity: 0.8; margin-top: 8px; font-size: 1rem; line-height:1.6;">
+                            ID: <?= htmlspecialchars($ruche_active['device_id']) ?> | MàJ : <b><?= $data['date'] ?></b><br>
+                            📍 <span id="city-name" style="font-weight:bold; color:var(--text-color);">Localisation GPS en cours...</span> (<?= htmlspecialchars($data['lat']) ?>, <?= htmlspecialchars($data['lon']) ?>)
+                        </p>
                     </div>
                     <form method="POST" style="margin:0;">
                         <input type="hidden" name="ruche_id" value="<?= htmlspecialchars($ruche_active_id) ?>">
-                        <button type="submit" name="rafraichir" class="btn-sync" title="Rafraîchir" style="background:transparent; border:none; cursor:pointer; font-size:1.4rem; transition:0.3s; padding:10px;">🔄</button>
+                        <button type="submit" name="rafraichir" class="btn-sync" title="Rafraîchir">🔄</button>
                     </form>
                 </div>
 
@@ -339,7 +345,7 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                         </div>
                     </div>
 
-                    <div class="modern-filters-row" style="background: var(--card-bg); border: var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); box-sizing: border-box;">
+                    <div class="modern-filters-row">
                         <div style="display:flex; align-items:center; gap: 10px;">
                             <form method="POST" id="periodForm" style="margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                 <input type="hidden" name="ruche_id" value="<?= htmlspecialchars($ruche_active_id) ?>">
@@ -368,25 +374,26 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                                 <span class="chip-icon">☀️</span> Luminosité
                             </label>
                         </div>
+                        <button type="button" class="st-button" style="border-color: #10b981; color: #10b981; width: auto; padding: 6px 15px; margin:0;" onclick="exportCSV()">📥 Exporter CSV</button>
                     </div>
 
                     <div id="wrapper-poids" class="chart-wrapper">
-                        <h3 style="font-size: 1.1rem; margin-top:0;">📈 Poids (kg)</h3>
-                        <div style="position: relative; height: 250px; width: 100%;">
+                        <h3 style="font-size: 1.2rem; margin-top:0;">📈 Évolution du Poids (kg)</h3>
+                        <div style="position: relative; height: 300px; width: 100%;">
                             <canvas id="weightChart"></canvas>
                         </div>
                     </div>
                     
                     <div id="wrapper-climat" class="chart-wrapper">
-                        <h3 style="font-size: 1.1rem; margin-top:0;">🌡️ Température & Humidité</h3>
-                        <div style="position: relative; height: 200px; width: 100%;">
+                        <h3 style="font-size: 1.2rem; margin-top:0;">🌡️ Température & Humidité</h3>
+                        <div style="position: relative; height: 250px; width: 100%;">
                             <canvas id="climateChart"></canvas>
                         </div>
                     </div>
                     
                     <div id="wrapper-lum" class="chart-wrapper">
-                        <h3 style="font-size: 1.1rem; margin-top:0;">☀️ Cycle de Luminosité</h3>
-                        <div style="position: relative; height: 150px; width: 100%;">
+                        <h3 style="font-size: 1.2rem; margin-top:0;">☀️ Cycle de Luminosité</h3>
+                        <div style="position: relative; height: 200px; width: 100%;">
                             <canvas id="lumChart"></canvas>
                         </div>
                     </div>
@@ -394,38 +401,38 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
 
                 <div id="meteo" class="tab-content">
                     <div class="chart-wrapper" style="animation-delay: 0.1s;">
-                        <h3 style="font-size: 1.2rem; margin-top:0;">⛅ Prévisions Météo (Lieu de la ruche)</h3>
+                        <h3 style="font-size: 1.3rem; margin-top:0;">⛅ Prévisions Météo</h3>
                         <div id="meteo-api-content" class="metrics-grid">Chargement...</div>
                     </div>
                 </div>
 
                 <div id="actions" class="tab-content">
                     <div class="chart-wrapper" style="animation-delay: 0.1s;">
-                        <h3 style="font-size: 1.2rem; margin-top:0;">🎛️ Centre de Contrôle Actionneurs</h3>
+                        <h3 style="font-size: 1.3rem; margin-top:0;">🎛️ Centre de Contrôle Actionneurs</h3>
                         
                         <div class="metrics-grid" style="margin-top:20px;">
                             <div class="metric-card" style="border: 2px solid rgba(59,130,246,0.3); animation: none; transform: none; opacity: 1;">
-                                <h4 style="font-size: 1.1rem; color: #3b82f6;">🚪 Trappe (Moteur)</h4>
-                                <div style="background: rgba(59,130,246,0.1); border-radius: 8px; padding: 10px; margin-bottom: 15px; text-align: center;">
-                                    <span style="font-size: 0.9rem; opacity: 0.8;">État actuel estimé</span><br>
-                                    <span id="door-status" style="font-weight: bold; font-size: 1.2rem; color: #3b82f6;">Fermée 🔴</span>
+                                <h4 style="font-size: 1.2rem; color: #3b82f6;">🚪 Trappe (Moteur)</h4>
+                                <div style="background: rgba(59,130,246,0.1); border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center;">
+                                    <span style="font-size: 0.95rem; opacity: 0.8;">État actuel estimé</span><br>
+                                    <span id="door-status" style="font-weight: bold; font-size: 1.4rem; color: #3b82f6;">Fermée 🔴</span>
                                 </div>
                                 <form method="POST" onsubmit="simulateDoorOpening()">
                                     <input type="hidden" name="ruche_id" value="<?= htmlspecialchars($ruche_active_id) ?>">
                                     <input type="hidden" name="saved_app_id" value="<?= htmlspecialchars($ruche_active['ttn_app_id'] ?? '') ?>">
                                     <input type="hidden" name="saved_api_key" value="<?= htmlspecialchars($ruche_active['ttn_api_key'] ?? '') ?>">
-                                    <label style="font-size:0.95rem;"><input type="checkbox" required> Confirmer l'action</label><br><br>
+                                    <label style="font-size:1rem;"><input type="checkbox" required> Confirmer l'action</label><br><br>
                                     <button type="submit" name="action_moteur" class="st-button" style="border-color: #3b82f6; color: #3b82f6; background: transparent;">Envoyer l'ordre d'ouverture</button>
                                 </form>
                             </div>
 
                             <div class="metric-card" style="border: 2px solid rgba(239,68,68,0.3); animation: none; transform: none; opacity: 1;">
-                                <h4 style="font-size: 1.1rem; color: #ef4444;">🚨 Alarme (Buzzer)</h4>
-                                <form method="POST" style="margin-top: 15px;">
+                                <h4 style="font-size: 1.2rem; color: #ef4444;">🚨 Alarme (Buzzer)</h4>
+                                <form method="POST" style="margin-top: 20px;">
                                     <input type="hidden" name="ruche_id" value="<?= htmlspecialchars($ruche_active_id) ?>">
                                     <input type="hidden" name="saved_app_id" value="<?= htmlspecialchars($ruche_active['ttn_app_id'] ?? '') ?>">
                                     <input type="hidden" name="saved_api_key" value="<?= htmlspecialchars($ruche_active['ttn_api_key'] ?? '') ?>">
-                                    <label style="font-size:0.95rem;"><input type="checkbox" required> Déverrouiller</label><br><br>
+                                    <label style="font-size:1rem;"><input type="checkbox" required> Déverrouiller</label><br><br>
                                     <button type="submit" name="action_buzzer" class="st-button" style="background: #ef4444; color: white; border: none;">📢 Déclencher</button>
                                 </form>
                             </div>
@@ -439,9 +446,9 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
     <div id="analysisModal" class="modal" onclick="if(event.target === this) closeModal()">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle" style="margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.5rem;">🤖 Diagnostic</h2>
-            <div id="modalBody" style="font-size: 1.05rem; line-height: 1.6; color: var(--text-color); opacity: 0.9;">
-                Chargement de l'analyse...
+            <h2 id="modalTitle" style="margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.6rem;">🤖 Diagnostic</h2>
+            <div id="modalBody" style="font-size: 1.1rem; line-height: 1.6; color: var(--text-color); opacity: 0.9;">
+                Chargement...
             </div>
             <button class="st-button" style="margin-top: 25px; border-color: var(--amber); color: var(--amber);" onclick="closeModal()">Compris !</button>
         </div>
@@ -450,16 +457,15 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
     <div id="toast">Message</div>
 
     <script>
-        // Logique de Sidebar Responsive
         function toggleSidebar() { 
             const sidebar = document.getElementById('sidebar');
             const main = document.getElementById('main-content');
             const overlay = document.getElementById('sidebar-overlay');
             
-            if(window.innerWidth > 991) { // Desktop
+            if(window.innerWidth > 991) {
                 sidebar.classList.toggle('collapsed');
                 main.classList.toggle('expanded');
-            } else { // Mobile/Tablet
+            } else {
                 sidebar.classList.toggle('active');
                 overlay.classList.toggle('active');
             }
@@ -488,7 +494,18 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         }
         <?php if($toast_msg != ""): ?> showToast("<?= htmlspecialchars($toast_msg, ENT_QUOTES) ?>", "<?= $toast_type ?>"); <?php endif; ?>
 
-        // 🌟 FILTRES MODERNES (CHIPS) AVEC ANIMATION DE RÉTRACTION 🌟
+        // 🌟 REVERSE GEOCODING 🌟
+        <?php if($ruche_active): ?>
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=<?= $data['lat'] ?>&lon=<?= $data['lon'] ?>`)
+                .then(res => res.json())
+                .then(data => {
+                    let city = data.address.city || data.address.town || data.address.village || data.address.county || "Lieu inconnu";
+                    document.getElementById('city-name').innerText = city;
+                })
+                .catch(() => document.getElementById('city-name').innerText = "Lieu non résolu");
+        <?php endif; ?>
+
+        // 🌟 GESTION DES FILTRES (RÉPARÉE) 🌟
         function toggleChart(type) {
             const wrapper = document.getElementById('wrapper-' + type);
             const checkbox = document.getElementById('toggle-' + type);
@@ -499,13 +516,12 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                 label.classList.add('active');
                 localStorage.setItem('show_chart_' + type, 'true');
             } else {
-                wrapper.classList.add('chart-hidden');
+                wrapper.classList.add('chart-hidden'); // Cache complètement l'élément
                 label.classList.remove('active');
                 localStorage.setItem('show_chart_' + type, 'false');
             }
         }
 
-        // Initialisation des filtres au chargement
         ['poids', 'climat', 'lum'].forEach(type => {
             const state = localStorage.getItem('show_chart_' + type);
             const checkbox = document.getElementById('toggle-' + type);
@@ -518,14 +534,13 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
             }
         });
 
-        // 🌟 LOGIQUE DU POP-UP D'ANALYSE (BOT) 🌟
+        // 🌟 DIAGNOSTIC INTELLIGENT 🌟
         function openAnalysis(type, value) {
             const modal = document.getElementById('analysisModal');
             const title = document.getElementById('modalTitle');
             const body = document.getElementById('modalBody');
             
             let text = ""; let head = "";
-            
             if(type === 'temp') {
                 head = "🌡️ Température";
                 if(value == 0) text = "Pas de donnée valide reçue par la sonde.";
@@ -541,7 +556,7 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
             }
             else if (type === 'poids') {
                 head = "⚖️ Suivi Pondéral";
-                text = `Le poids est l'indicateur principal de la santé et des réserves de la colonie.<br><br>• <b>Hausse continue :</b> C'est une miellée ! Préparez vos hausses.<br>• <b>Baisse lente :</b> Période de consommation (hiver, ou disette estivale).<br>• <b>Chute brutale (2 à 4kg) :</b> Essaimage très probable. La vieille reine a quitté la ruche avec la moitié des ouvrières.`;
+                text = `Le poids actuel est de <b>${value} kg</b>.<br><br>• <b>Hausse continue :</b> C'est une miellée ! Préparez vos hausses.<br>• <b>Baisse lente :</b> Période de consommation (hiver, ou disette estivale).<br>• <b>Chute brutale (2 à 4kg) :</b> Essaimage très probable. La vieille reine a quitté la ruche avec la moitié des ouvrières.`;
             }
             else if (type === 'lum') {
                 head = "☀️ Luminosité";
@@ -554,11 +569,8 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
             modal.classList.add('show');
         }
 
-        function closeModal() {
-            document.getElementById('analysisModal').classList.remove('show');
-        }
+        function closeModal() { document.getElementById('analysisModal').classList.remove('show'); }
 
-        // SIMULATION VISUELLE DE L'ÉTAT DE LA PORTE
         function simulateDoorOpening() {
             const status = document.getElementById('door-status');
             status.innerHTML = "Demande en cours... ⏳";
@@ -647,7 +659,7 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                     let t_max = data.daily.temperature_2m_max[i]; let rain = data.daily.precipitation_sum[i]; let code = data.daily.weathercode[i];
                     let emoji = codes[code] || '⛅';
                     let pastille = (t_max < 12 || rain > 1.0 || [71, 73, 75, 95].includes(code)) ? '<span style="background:#FECACA; color:#7F1D1D; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold;">🛑 Vol Limité</span>' : '<span style="background:#BBF7D0; color:#14532D; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold;">✅ Vol Actif</span>';
-                    html += `<div class="metric-card" style="text-align:center;"><h4 style="margin:0; text-transform:capitalize;">${i===0 ? "Auj." : date}</h4><div style="font-size:2.5rem; margin:10px 0;">${emoji}</div><div style="font-weight:bold; font-size:1.2rem;">${t_max}°C</div><div style="color:#3B82F6; font-size:0.9rem; margin-bottom: 10px;">💧 ${rain} mm</div>${pastille}</div>`;
+                    html += `<div class="metric-card" style="text-align:center; padding:15px;"><h4 style="margin:0; text-transform:capitalize;">${i===0 ? "Auj." : date}</h4><div style="font-size:2.5rem; margin:10px 0;">${emoji}</div><div style="font-weight:bold; font-size:1.2rem;">${t_max}°C</div><div style="color:#3B82F6; font-size:0.9rem; margin-bottom: 10px;">💧 ${rain} mm</div>${pastille}</div>`;
                 }
                 document.getElementById('meteo-api-content').innerHTML = html;
             });
