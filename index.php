@@ -29,7 +29,9 @@ if (isset($_POST['connecter_reseau'])) {
     $toast_msg = "Clés TTN mises à jour ! 🚀"; $toast_type = "success";
 }
 
-// Actionneurs
+// --- ACTIONNEURS ---
+
+// ALARME (0x01)
 if (isset($_POST['action_buzzer'])) {
     $ttn_app = trim($_POST['saved_app_id'] ?? ''); $ttn_key = trim($_POST['saved_api_key'] ?? ''); $dev_id = trim($_POST['ruche_id'] ?? '');
     if (empty($ttn_app) || empty($ttn_key)) { $toast_msg = "❌ Clés TTN manquantes."; $toast_type = "error"; } 
@@ -45,7 +47,8 @@ if (isset($_POST['action_buzzer'])) {
     }
 }
 
-if (isset($_POST['action_moteur'])) {
+// MOTEUR OUVRIR (0x02)
+if (isset($_POST['action_moteur_ouvrir'])) {
     $ttn_app = trim($_POST['saved_app_id'] ?? ''); $ttn_key = trim($_POST['saved_api_key'] ?? ''); $dev_id = trim($_POST['ruche_id'] ?? '');
     if (empty($ttn_app) || empty($ttn_key)) { $toast_msg = "❌ Clés TTN manquantes."; $toast_type = "error"; } 
     else {
@@ -55,8 +58,30 @@ if (isset($_POST['action_moteur'])) {
         curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: Bearer $ttn_key", "Content-Type: application/json"]);
         curl_setopt($ch, CURLOPT_POST, 1); curl_setopt($ch, CURLOPT_POSTFIELDS, $data); curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch); $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
-        if($httpcode >= 200 && $httpcode < 300) { $toast_msg = "✅ Ordre d'ouverture envoyé !"; $toast_type = "success"; } 
-        else { $toast_msg = "❌ Échec TTN (Erreur $httpcode)."; $toast_type = "error"; }
+        
+        if($httpcode >= 200 && $httpcode < 300) { 
+            $toast_msg = "✅ Ordre d'ouverture envoyé !"; $toast_type = "success"; 
+            $_SESSION['door_state_' . $dev_id] = 'open'; // Mémorise l'état OUVERT en PHP
+        } else { $toast_msg = "❌ Échec TTN (Erreur $httpcode)."; $toast_type = "error"; }
+    }
+}
+
+// MOTEUR FERMER (0x03)
+if (isset($_POST['action_moteur_fermer'])) {
+    $ttn_app = trim($_POST['saved_app_id'] ?? ''); $ttn_key = trim($_POST['saved_api_key'] ?? ''); $dev_id = trim($_POST['ruche_id'] ?? '');
+    if (empty($ttn_app) || empty($ttn_key)) { $toast_msg = "❌ Clés TTN manquantes."; $toast_type = "error"; } 
+    else {
+        $url = "https://eu1.cloud.thethings.network/api/v3/as/applications/" . urlencode($ttn_app) . "/devices/" . urlencode($dev_id) . "/down/push";
+        $data = json_encode(["downlinks" => [["f_port" => 1, "frm_payload" => base64_encode(hex2bin("03")), "priority" => "NORMAL"]]]);
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: Bearer $ttn_key", "Content-Type: application/json"]);
+        curl_setopt($ch, CURLOPT_POST, 1); curl_setopt($ch, CURLOPT_POSTFIELDS, $data); curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch); $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+        
+        if($httpcode >= 200 && $httpcode < 300) { 
+            $toast_msg = "✅ Ordre de fermeture envoyé !"; $toast_type = "success"; 
+            $_SESSION['door_state_' . $dev_id] = 'closed'; // Mémorise l'état FERMÉ en PHP
+        } else { $toast_msg = "❌ Échec TTN (Erreur $httpcode)."; $toast_type = "error"; }
     }
 }
 
@@ -124,13 +149,11 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         html, body { margin: 0; padding: 0; width: 100%; min-height: 100vh; overflow-x: hidden; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-color); color: var(--text-color); transition: background 0.3s; }
         h1, h2, h3, h4 { color: var(--amber); margin-top: 0; }
         
-        /* 🌟 TOPBAR FIXÉE 🌟 */
         .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: var(--card-bg); border-bottom: var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 2000; box-shadow: var(--shadow); box-sizing: border-box; }
         .topbar-left { display: flex; align-items: center; gap: 15px; }
         .menu-btn { font-size: 1.8rem; cursor: pointer; background: none; border: none; color: var(--text-color); padding: 5px; outline: none; transition: 0.2s; }
         .menu-btn:hover { transform: scale(1.1); }
         
-        /* 🌟 LAYOUT CORRIGÉ (SANS FLEXBOX SUR .LAYOUT) 🌟 */
         .layout { display: block; margin-top: 60px; min-height: calc(100vh - 60px); width: 100%; }
         
         .sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: 280px; background: var(--sidebar-bg); border-right: var(--border); padding: 20px; box-sizing: border-box; overflow-y: auto; z-index: 1500; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(0); }
@@ -191,7 +214,6 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 🌟 FILTRES MODERNES 🌟 */
         .modern-filters-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; margin-bottom: 25px; animation: fadeSlideUp 0.6s forwards; animation-delay: 0.3s; opacity: 0; background: var(--card-bg); border: var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); box-sizing: border-box;}
         .modern-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .filter-chip {
@@ -206,7 +228,6 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         .chip-icon { display: inline-block; transition: 0.3s; }
         .filter-chip.active .chip-icon { transform: scale(1.2); }
 
-        /* 🌟 GRAPHIQUES CORRIGÉS (DISPLAY NONE POUR DISPARAITRE VRAIMENT) 🌟 */
         .chart-wrapper { 
             background: var(--card-bg); border: var(--border); border-radius: 12px; padding: 25px; 
             box-shadow: var(--shadow); margin-bottom: 25px; width: 100%; box-sizing: border-box; 
@@ -411,18 +432,33 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                         <h3 style="font-size: 1.3rem; margin-top:0;">🎛️ Centre de Contrôle Actionneurs</h3>
                         
                         <div class="metrics-grid" style="margin-top:20px;">
+                            
+                            <?php 
+                            // Récupère l'état de la porte en mémoire (Fermée par défaut si on n'a rien cliqué)
+                            $etat_trappe = $_SESSION['door_state_' . $ruche_active_id] ?? 'closed'; 
+                            ?>
+                            
                             <div class="metric-card" style="border: 2px solid rgba(59,130,246,0.3); animation: none; transform: none; opacity: 1;">
                                 <h4 style="font-size: 1.2rem; color: #3b82f6;">🚪 Trappe (Moteur)</h4>
+                                
                                 <div style="background: rgba(59,130,246,0.1); border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center;">
-                                    <span style="font-size: 0.95rem; opacity: 0.8;">État actuel estimé</span><br>
-                                    <span id="door-status" style="font-weight: bold; font-size: 1.4rem; color: #3b82f6;">Fermée 🔴</span>
+                                    <span style="font-size: 0.95rem; opacity: 0.8;">Dernier ordre envoyé</span><br>
+                                    <?php if($etat_trappe === 'open'): ?>
+                                        <span id="door-status" style="font-weight: bold; font-size: 1.4rem; color: #10b981;">Ouverte 🟢</span>
+                                    <?php else: ?>
+                                        <span id="door-status" style="font-weight: bold; font-size: 1.4rem; color: #ef4444;">Fermée 🔴</span>
+                                    <?php endif; ?>
                                 </div>
-                                <form method="POST" onsubmit="simulateDoorOpening()">
+                                
+                                <form method="POST">
                                     <input type="hidden" name="ruche_id" value="<?= htmlspecialchars($ruche_active_id) ?>">
                                     <input type="hidden" name="saved_app_id" value="<?= htmlspecialchars($ruche_active['ttn_app_id'] ?? '') ?>">
                                     <input type="hidden" name="saved_api_key" value="<?= htmlspecialchars($ruche_active['ttn_api_key'] ?? '') ?>">
                                     <label style="font-size:1rem;"><input type="checkbox" required> Confirmer l'action</label><br><br>
-                                    <button type="submit" name="action_moteur" class="st-button" style="border-color: #3b82f6; color: #3b82f6; background: transparent;">Envoyer l'ordre d'ouverture</button>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button type="submit" name="action_moteur_ouvrir" class="st-button" style="border-color: #10b981; color: #10b981; background: transparent;">🚪 Ouvrir</button>
+                                        <button type="submit" name="action_moteur_fermer" class="st-button" style="border-color: #ef4444; color: #ef4444; background: transparent;">🚪 Fermer</button>
+                                    </div>
                                 </form>
                             </div>
 
@@ -436,6 +472,7 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                                     <button type="submit" name="action_buzzer" class="st-button" style="background: #ef4444; color: white; border: none;">📢 Déclencher</button>
                                 </form>
                             </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -494,7 +531,6 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         }
         <?php if($toast_msg != ""): ?> showToast("<?= htmlspecialchars($toast_msg, ENT_QUOTES) ?>", "<?= $toast_type ?>"); <?php endif; ?>
 
-        // 🌟 REVERSE GEOCODING 🌟
         <?php if($ruche_active): ?>
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=<?= $data['lat'] ?>&lon=<?= $data['lon'] ?>`)
                 .then(res => res.json())
@@ -505,7 +541,6 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                 .catch(() => document.getElementById('city-name').innerText = "Lieu non résolu");
         <?php endif; ?>
 
-        // 🌟 GESTION DES FILTRES (RÉPARÉE) 🌟
         function toggleChart(type) {
             const wrapper = document.getElementById('wrapper-' + type);
             const checkbox = document.getElementById('toggle-' + type);
@@ -516,7 +551,7 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
                 label.classList.add('active');
                 localStorage.setItem('show_chart_' + type, 'true');
             } else {
-                wrapper.classList.add('chart-hidden'); // Cache complètement l'élément
+                wrapper.classList.add('chart-hidden'); 
                 label.classList.remove('active');
                 localStorage.setItem('show_chart_' + type, 'false');
             }
@@ -534,7 +569,6 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
             }
         });
 
-        // 🌟 DIAGNOSTIC INTELLIGENT 🌟
         function openAnalysis(type, value) {
             const modal = document.getElementById('analysisModal');
             const title = document.getElementById('modalTitle');
@@ -570,25 +604,6 @@ $alert_hum = ($data['hum'] > 80) && $vrai_donnee;
         }
 
         function closeModal() { document.getElementById('analysisModal').classList.remove('show'); }
-
-        function simulateDoorOpening() {
-            const status = document.getElementById('door-status');
-            status.innerHTML = "Demande en cours... ⏳";
-            status.style.color = "var(--text-color)";
-            setTimeout(() => {
-                status.innerHTML = "Ouverte 🟢";
-                status.style.color = "#10b981";
-                localStorage.setItem('door_state', 'open');
-            }, 3000);
-        }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const status = document.getElementById('door-status');
-            if(status && localStorage.getItem('door_state') === 'open') {
-                status.innerHTML = "Ouverte 🟢";
-                status.style.color = "#10b981";
-            }
-        });
 
         function exportCSV() {
             const labels = <?= json_encode($labels_graph) ?>;
