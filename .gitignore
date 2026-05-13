@@ -1,4 +1,6 @@
 *.log
 *.db
+*.bak
+.DS_Store
 y
 y.pub
