@@ -87,3 +87,14 @@ if ($ruche_active) {
 // Alertes
 $alert_temp = $vrai_donnee && ($data['temp'] < 30 || $data['temp'] > 37);
 $alert_hum  = $vrai_donnee && $data['hum'] > 80;
+
+// Score de santé (0–100)
+$health_score = 100;
+if ($vrai_donnee) {
+    if ($alert_temp)                                   $health_score -= 30;
+    if ($alert_hum)                                    $health_score -= 20;
+    if ($data['poids'] > 0 && $data['poids'] < 10)    $health_score -= 15;
+}
+$health_score = max(0, $health_score);
+$health_tier  = $health_score >= 80 ? 'good' : ($health_score >= 60 ? 'warn' : 'bad');
+$health_emoji = $health_score >= 80 ? '✅' : ($health_score >= 60 ? '⚠️' : '🚨');

@@ -147,8 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (numEl && !isNaN(target)) animateCountUp(numEl, target, decimals, 1100);
         });
 
-        document.querySelectorAll('.metric-bar-fill[data-pct]').forEach(bar => {
-            bar.style.width = bar.dataset.pct + '%';
+        document.querySelectorAll('.gauge-arc[data-pct]').forEach(arc => {
+            const pct = Math.min(100, Math.max(0, parseFloat(arc.dataset.pct)));
+            arc.style.strokeDashoffset = (157 * (1 - pct / 100)).toFixed(2);
         });
     }, 400);
 });

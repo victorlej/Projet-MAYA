@@ -55,6 +55,58 @@ window.MAYA = {
 <script src="assets/js/charts.js?v=<?= filemtime(__DIR__ . '/../../assets/js/charts.js') ?>"></script>
 <script src="assets/js/meteo.js?v=<?= filemtime(__DIR__ . '/../../assets/js/meteo.js') ?>"></script>
 <script src="assets/js/bees.js?v=<?= filemtime(__DIR__ . '/../../assets/js/bees.js') ?>"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+/* ===== Leaflet map ===== */
+(function () {
+    const el = document.getElementById('hive-map');
+    if (!el || !window.MAYA || !MAYA.hasRuche) return;
+    const map = L.map('hive-map', { scrollWheelZoom: false, zoomControl: true })
+        .setView([MAYA.lat, MAYA.lon], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>'
+    }).addTo(map);
+    const icon = L.divIcon({ html: '<div class="map-marker">🐝</div>', className: '', iconSize: [36, 36], iconAnchor: [18, 18] });
+    L.marker([MAYA.lat, MAYA.lon], { icon }).addTo(map).bindPopup('🐝 Votre ruche').openPopup();
+})();
+
+/* ===== Notifications push ===== */
+function toggleNotifications() {
+    if (!('Notification' in window)) { showToast('Notifications non supportées dans ce navigateur', 'error'); return; }
+    if (Notification.permission === 'denied') { showToast('Notifications bloquées — autorisez-les dans les réglages du navigateur', 'error'); return; }
+    if (Notification.permission === 'granted') { checkAlerts(); showToast('Alertes vérifiées 🔔', 'info'); return; }
+    Notification.requestPermission().then(p => {
+        if (p === 'granted') {
+            document.getElementById('notif-btn').classList.add('notif-on');
+            showToast('Alertes push activées ! 🔔', 'success');
+            checkAlerts();
+        } else {
+            showToast('Permission refusée', 'error');
+        }
+    });
+}
+function checkAlerts() {
+    if (Notification.permission !== 'granted' || !window.MAYA || !MAYA.hasRuche) return;
+    const last = a => Array.isArray(a) && a.length ? a[a.length - 1] : null;
+    const t = last(MAYA.temp), h = last(MAYA.hum);
+    if (t !== null && t > 37) new Notification('🔥 MAYA — Surchauffe', { body: `Température : ${t} °C — Vérifiez votre ruche !` });
+    if (t !== null && t < 30) new Notification('🥶 MAYA — Trop froid',  { body: `Température : ${t} °C — La colonie est en danger.` });
+    if (h !== null && h > 80) new Notification('💦 MAYA — Humidité',    { body: `Humidité : ${h} % — Risque de moisissures.` });
+}
+if ('Notification' in window && Notification.permission === 'granted') {
+    document.getElementById('notif-btn')?.classList.add('notif-on');
+    checkAlerts();
+}
+
+/* ===== Mode kiosque ===== */
+function toggleKiosk() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => showToast('Plein écran non autorisé', 'error'));
+    } else {
+        document.exitFullscreen();
+    }
+}
+</script>
 
 <!-- ===== Chatbot JS (règles locales) ===== -->
 <script>

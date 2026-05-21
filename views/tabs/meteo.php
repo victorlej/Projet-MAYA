@@ -7,4 +7,11 @@
             </div>
         </div>
     </div>
+
+    <?php if ($ruche_active): ?>
+    <div class="chart-card anim-fade delay-2">
+        <h3>📍 Position de la ruche</h3>
+        <div id="hive-map"></div>
+    </div>
+    <?php endif; ?>
 </section>

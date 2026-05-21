@@ -377,14 +377,6 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
 .metric-unit { font-size: 1rem; font-weight: 600; color: var(--text-soft); margin-left: 4px; }
 .metric-trend { font-size: .78rem; font-weight: 600; margin-top: 8px; color: var(--text-soft); }
 
-.metric-bar { height: 5px; border-radius: 3px; background: var(--border); margin-top: 14px; overflow: hidden; }
-.metric-bar-fill {
-    height: 100%; border-radius: 3px; width: 0%;
-    background: var(--honey-grad);
-    transition: width 1.4s cubic-bezier(.4,0,.2,1);
-}
-.metric.alert-temp .metric-bar-fill { background: linear-gradient(90deg, var(--red), #ff8080); }
-.metric.alert-hum  .metric-bar-fill { background: linear-gradient(90deg, var(--honey-500), var(--honey-300)); }
 
 .metric.alert-temp { border-color: var(--red); background: linear-gradient(135deg, rgba(239,68,68,.08), var(--card)); }
 .metric.alert-temp .metric-value { color: var(--red); }
@@ -740,6 +732,62 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
     .chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 90px; }
     .chat-btn   { bottom: 20px; right: 16px; }
 }
+
+/* ---------- 20. GAUGE SVG ---------- */
+.gauge-svg { width: 100%; max-width: 100px; display: block; margin: 10px auto 0; }
+.gauge-track { stroke: rgba(245,158,11,.14); }
+[data-theme="dark"] .gauge-track { stroke: rgba(255,255,255,.08); }
+.gauge-arc { stroke: var(--honey-500); transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1); }
+.gauge-dot { color: var(--honey-500); }
+.metric.alert-temp .gauge-arc, .metric.alert-temp .gauge-dot { stroke: var(--red); color: var(--red); }
+.metric.alert-hum  .gauge-arc, .metric.alert-hum  .gauge-dot { stroke: var(--honey-600); color: var(--honey-600); }
+
+/* ---------- 21. HEALTH SCORE ---------- */
+.health-badge {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+    padding: 5px 14px; border-radius: 100px; font-size: .82rem; font-weight: 700;
+    border: 1px solid; animation: pop .5s var(--bounce) .5s both;
+}
+.health-max { font-size: .72em; opacity: .7; }
+.health-good { background: rgba(16,185,129,.1);  color: var(--green);      border-color: rgba(16,185,129,.25); }
+.health-warn { background: rgba(245,158,11,.1);  color: var(--honey-600);  border-color: rgba(245,158,11,.3); }
+.health-bad  { background: rgba(239,68,68,.1);   color: var(--red);        border-color: rgba(239,68,68,.25); }
+
+/* ---------- 22. CONSEIL DU JOUR ---------- */
+.conseil-card {
+    display: flex; align-items: center; gap: 18px; padding: 18px 22px;
+    border-radius: var(--radius); margin-bottom: 22px;
+    border: 1px solid; position: relative; overflow: hidden;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.conseil-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.conseil-info    { background: rgba(245,158,11,.07); border-color: rgba(245,158,11,.25); }
+.conseil-info::before { background: var(--honey-grad); }
+.conseil-warning { background: rgba(245,158,11,.11); border-color: rgba(245,158,11,.4); }
+.conseil-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.conseil-danger  { background: rgba(239,68,68,.07);  border-color: rgba(239,68,68,.28); }
+.conseil-danger::before { background: linear-gradient(90deg, var(--red), #ff8080); }
+.conseil-ico { font-size: 2rem; flex-shrink: 0; animation: float-y 4s ease-in-out infinite; line-height: 1; }
+.conseil-body { flex: 1; min-width: 0; }
+.conseil-titre { font-weight: 700; font-size: .95rem; margin-bottom: 4px; color: var(--text); }
+.conseil-texte { font-size: .83rem; color: var(--text-soft); line-height: 1.55; }
+.conseil-danger  .conseil-titre { color: var(--red); }
+.conseil-warning .conseil-titre { color: var(--honey-700); }
+.conseil-badge {
+    position: absolute; top: 10px; right: 14px;
+    font-size: .65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--text-soft); opacity: .6;
+}
+[data-theme="dark"] .conseil-titre { color: var(--text); }
+
+/* ---------- 23. LEAFLET MAP ---------- */
+#hive-map { height: 220px; border-radius: 12px; z-index: 1; }
+.map-marker { font-size: 1.6rem; filter: drop-shadow(0 4px 8px rgba(245,158,11,.5)); animation: float-y 3s ease-in-out infinite; }
+
+/* ---------- 24. NOTIFICATION BUTTON ---------- */
+.icon-btn.notif-on { background: rgba(245,158,11,.12); border-color: var(--honey-500); color: var(--honey-600); animation: glow-pulse 3s ease-in-out infinite; }
 
 /* ---------- 20. CHAT SUGGESTIONS ---------- */
 .chat-suggestions {

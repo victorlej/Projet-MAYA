@@ -7,6 +7,11 @@
             <span class="pin">📍 <span id="city-name">Localisation en cours…</span></span>
             <span style="opacity:.7;">(<?= e((string)$data['lat']) ?>, <?= e((string)$data['lon']) ?>)</span>
         </p>
+        <?php if ($vrai_donnee): ?>
+        <span class="health-badge health-<?= $health_tier ?>">
+            <?= $health_emoji ?> Santé <?= $health_score ?><span class="health-max">/100</span>
+        </span>
+        <?php endif; ?>
     </div>
     <form method="POST" style="margin:0;">
         <input type="hidden" name="ruche_id" value="<?= e($ruche_active_id) ?>">

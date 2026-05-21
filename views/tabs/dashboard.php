@@ -19,10 +19,17 @@
                 <span class="metric-num">0</span><span class="metric-unit"><?= $m['unit'] ?></span>
             </div>
             <div class="metric-trend"><?= $m['trend'] ?></div>
-            <div class="metric-bar"><div class="metric-bar-fill" data-pct="<?= $m['pct'] ?>"></div></div>
+            <svg class="gauge-svg" viewBox="0 0 120 65" aria-hidden="true">
+                <path class="gauge-track" d="M 10 60 A 50 50 0 0 1 110 60" stroke-width="8" fill="none" stroke-linecap="round"/>
+                <path class="gauge-arc"   d="M 10 60 A 50 50 0 0 1 110 60" stroke-width="8" fill="none" stroke-linecap="round"
+                      stroke-dasharray="157 157" stroke-dashoffset="157" data-pct="<?= $m['pct'] ?>"/>
+                <circle class="gauge-dot" cx="60" cy="60" r="3.5" fill="currentColor"/>
+            </svg>
         </div>
         <?php endforeach; ?>
     </div>
+
+    <?php include __DIR__ . '/../partials/conseil.php'; ?>
 
     <div class="filters-bar">
         <form method="POST" style="margin:0; display:flex; gap:8px; align-items:center;">
