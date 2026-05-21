@@ -15,5 +15,3 @@ const PAYLOAD_SHUT = '03';
 
 const APP_NAME = 'MAYA';
 const REFRESH_MS = 180000; // auto-refresh dashboard
-
-const ANTHROPIC_API_KEY = 'sk-ant-REMPLACEZ_PAR_VOTRE_CLE';

@@ -54,7 +54,7 @@ window.MAYA = {
 <script src="assets/js/meteo.js?v=<?= filemtime(__DIR__ . '/../../assets/js/meteo.js') ?>"></script>
 <script src="assets/js/bees.js?v=<?= filemtime(__DIR__ . '/../../assets/js/bees.js') ?>"></script>
 
-<!-- ===== Chatbot JS ===== -->
+<!-- ===== Chatbot JS (règles locales) ===== -->
 <script>
 (function () {
     const btn      = document.getElementById('chat-btn');
@@ -65,12 +65,108 @@ window.MAYA = {
     const msgBox   = document.getElementById('chat-messages');
     let open = false;
 
+    // --- Données capteurs ---
+    function getData() {
+        const d = window.MAYA || {};
+        return {
+            hasRuche: !!d.hasRuche,
+            temp:  Array.isArray(d.temp)  && d.temp.length  ? d.temp[d.temp.length - 1]   : null,
+            hum:   Array.isArray(d.hum)   && d.hum.length   ? d.hum[d.hum.length - 1]     : null,
+            poids: Array.isArray(d.poids) && d.poids.length ? d.poids[d.poids.length - 1] : null,
+            lum:   Array.isArray(d.lum)   && d.lum.length   ? d.lum[d.lum.length - 1]     : null,
+        };
+    }
+
+    // --- Moteur de règles ---
+    function reply(msg) {
+        const s = msg.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        const d = getData();
+
+        // Température
+        if (/temp|chaud|froid|degre|°/.test(s)) {
+            if (d.temp === null) return '🌡️ Aucune donnée de température disponible pour l\'instant.';
+            if (d.temp < 30) return `🥶 Température basse : ${d.temp} °C. La ruche est peut-être en grappes hivernales ou manque de chaleur.`;
+            if (d.temp > 37) return `🔥 Température élevée : ${d.temp} °C. Risque de surchauffe — vérifiez la ventilation et l'ombrage.`;
+            return `🌡️ Température actuelle : ${d.temp} °C. C'est dans la plage normale (30–37 °C). 👍`;
+        }
+
+        // Humidité
+        if (/humid|eau|mouill|hygro/.test(s)) {
+            if (d.hum === null) return '💧 Aucune donnée d\'humidité disponible.';
+            if (d.hum > 80) return `💦 Humidité élevée : ${d.hum} %. Risque de moisissures — améliorez la ventilation.`;
+            if (d.hum < 40) return `🏜️ Humidité faible : ${d.hum} %. Surveillez si les abeilles apportent suffisamment d'eau.`;
+            return `💧 Humidité : ${d.hum} %. C'est correct (40–70 %). ✅`;
+        }
+
+        // Poids / miel
+        if (/poids|miel|kg|kilog|recolte|essaim/.test(s)) {
+            if (d.poids === null) return '⚖️ Aucune donnée de poids disponible.';
+            if (d.poids < 10) return `⚖️ Poids faible : ${d.poids} kg. Réserves limitées, envisagez une nourriture si nécessaire.`;
+            if (d.poids > 40) return `🍯 Poids important : ${d.poids} kg. La ruche est bien garnie, une récolte pourrait être envisagée !`;
+            return `⚖️ Poids actuel : ${d.poids} kg. La colonie est bien approvisionnée.`;
+        }
+
+        // Luminosité / activité
+        if (/lumin|lumiere|soleil|activit|jour|nuit/.test(s)) {
+            if (d.lum === null) return '☀️ Aucune donnée de luminosité disponible.';
+            if (d.lum > 70) return `☀️ Luminosité forte : ${d.lum} %. Journée active — les butineuses sont probablement en vol.`;
+            if (d.lum < 20) return `🌙 Luminosité faible : ${d.lum} %. La ruche est en repos nocturne ou par temps couvert.`;
+            return `☀️ Luminosité : ${d.lum} %. Activité modérée dans la ruche.`;
+        }
+
+        // État général / santé
+        if (/etat|sante|bien|ok|comment|bonne|ruche|normal|probleme|alerte/.test(s)) {
+            if (!d.hasRuche) return '🐝 Aucune ruche connectée. Ajoutez-en une via le panneau latéral.';
+            const issues = [];
+            if (d.temp !== null && (d.temp < 30 || d.temp > 37)) issues.push(`température hors plage (${d.temp} °C)`);
+            if (d.hum  !== null && d.hum > 80) issues.push(`humidité élevée (${d.hum} %)`);
+            if (d.poids !== null && d.poids < 10) issues.push(`poids faible (${d.poids} kg)`);
+            if (issues.length) return `⚠️ Points d'attention : ${issues.join(', ')}. Vérifiez la ruche rapidement.`;
+            return '✅ Tout semble normal ! Température, humidité et poids sont dans les normes.';
+        }
+
+        // Trappe / porte
+        if (/trappe|porte|ouvri|fermer|motor/.test(s)) {
+            return '🚪 Vous pouvez contrôler la trappe motorisée depuis l\'onglet **Actions** du tableau de bord.';
+        }
+
+        // Buzzer / alarme
+        if (/buzz|alarm|son|bruit|signal/.test(s)) {
+            return '🚨 L\'alarme sonore (buzzer) se déclenche depuis l\'onglet **Actions**.';
+        }
+
+        // Météo
+        if (/meteo|pluie|vent|prevision|temps/.test(s)) {
+            return '⛅ Consultez l\'onglet **Météo** pour les prévisions sur 7 jours à la position de votre ruche.';
+        }
+
+        // Graphiques
+        if (/graphique|graph|histor|courbe|periode|donnee/.test(s)) {
+            return '📈 Les graphiques sont disponibles dans l\'onglet **Tableau de bord**. Vous pouvez filtrer par 1h, 24h, 7j ou 30j.';
+        }
+
+        // Bonjour
+        if (/bonjour|salut|hello|coucou|bonsoir/.test(s)) {
+            return '🐝 Bonjour ! Je suis MAYA, votre assistante ruche. Demandez-moi la température, l\'humidité, le poids ou l\'état général de la colonie.';
+        }
+
+        // Merci
+        if (/merci|super|parfait|top|bravo/.test(s)) {
+            return '🍯 Avec plaisir ! N\'hésitez pas si vous avez d\'autres questions sur votre ruche.';
+        }
+
+        // Fallback
+        return '🐝 Je peux vous renseigner sur la **température**, l\'**humidité**, le **poids**, la **luminosité** ou l\'**état général** de votre ruche. Que souhaitez-vous savoir ?';
+    }
+
+    // --- UI ---
     function toggleChat() {
         open = !open;
         panel.classList.toggle('open', open);
         btn.classList.toggle('open', open);
         if (open) {
-            if (msgBox.children.length === 0) addMsg('ai', '🐝 Bonjour ! Je suis MAYA, votre assistante apicole. Comment puis-je vous aider avec votre rucher ?');
+            if (msgBox.children.length === 0)
+                addMsg('ai', '🐝 Bonjour ! Je suis MAYA, votre assistante apicole. Demandez-moi l\'état de votre ruche, la température, le poids ou autre chose !');
             setTimeout(() => input.focus(), 350);
         }
     }
@@ -81,7 +177,6 @@ window.MAYA = {
         d.textContent = text;
         msgBox.appendChild(d);
         msgBox.scrollTop = msgBox.scrollHeight;
-        return d;
     }
 
     function showTyping() {
@@ -98,41 +193,17 @@ window.MAYA = {
         if (t) t.remove();
     }
 
-    async function send() {
+    function send() {
         const text = input.value.trim();
-        if (!text || sendBtn.disabled) return;
-
+        if (!text) return;
         input.value = '';
         input.style.height = 'auto';
-        sendBtn.disabled = true;
         addMsg('user', text);
         showTyping();
-
-        const d = window.MAYA || {};
-        const ctx = {
-            hasRuche: d.hasRuche ?? false,
-            temp:  Array.isArray(d.temp)  && d.temp.length  ? d.temp[d.temp.length - 1]   : null,
-            hum:   Array.isArray(d.hum)   && d.hum.length   ? d.hum[d.hum.length - 1]     : null,
-            poids: Array.isArray(d.poids) && d.poids.length ? d.poids[d.poids.length - 1] : null,
-            lum:   Array.isArray(d.lum)   && d.lum.length   ? d.lum[d.lum.length - 1]     : null,
-        };
-
-        try {
-            const res  = await fetch('ajax/chat.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text, context: ctx }),
-            });
-            const data = await res.json();
+        setTimeout(() => {
             hideTyping();
-            addMsg('ai', data.reply ?? 'Désolé, je n\'ai pas pu répondre.');
-        } catch (e) {
-            hideTyping();
-            addMsg('ai', '⚠️ Erreur réseau. Réessayez dans un instant.');
-        }
-
-        sendBtn.disabled = false;
-        input.focus();
+            addMsg('ai', reply(text));
+        }, 500 + Math.random() * 300);
     }
 
     btn.addEventListener('click', toggleChat);
