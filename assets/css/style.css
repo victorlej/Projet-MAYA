@@ -22,16 +22,16 @@
 
 /* ---------- 1. DESIGN TOKENS ---------- */
 :root {
-    --bg: #f7f5f0;
-    --bg-soft: #ffffff;
-    --card: rgba(255, 255, 255, 0.75);
-    --card-solid: #ffffff;
+    --bg: #fffbeb;
+    --bg-soft: #fffef5;
+    --card: rgba(255, 255, 255, 0.85);
+    --card-solid: #fffef8;
     --text: #1f2330;
     --text-soft: #6b7280;
-    --border: rgba(31, 35, 48, 0.08);
-    --shadow-sm: 0 1px 2px rgba(31,35,48,.04), 0 2px 8px rgba(31,35,48,.04);
-    --shadow-md: 0 4px 20px rgba(31,35,48,.08);
-    --shadow-lg: 0 20px 50px rgba(245,158,11,.18);
+    --border: rgba(245, 158, 11, 0.18);
+    --shadow-sm: 0 1px 3px rgba(245,158,11,.08), 0 2px 8px rgba(245,158,11,.06);
+    --shadow-md: 0 4px 20px rgba(245,158,11,.14);
+    --shadow-lg: 0 20px 50px rgba(245,158,11,.22);
 
     --honey-50:  #fffbeb;
     --honey-100: #fef3c7;
@@ -79,18 +79,20 @@ body {
 body::before {
     content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
     background:
-        radial-gradient(circle at 10% 0%, rgba(251,191,36,.15), transparent 45%),
-        radial-gradient(circle at 90% 100%, rgba(245,158,11,.10), transparent 45%);
+        radial-gradient(circle at 15% 10%, rgba(251,191,36,.28), transparent 45%),
+        radial-gradient(circle at 85% 90%, rgba(217,119,6,.20), transparent 50%);
 }
 body::after {
-    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .25;
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .55;
     background-image:
-        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='96' viewBox='0 0 84 96'><polygon points='42,4 78,24 78,72 42,92 6,72 6,24' fill='none' stroke='%23f59e0b' stroke-width='1' opacity='.25'/></svg>");
-    background-size: 84px 96px;
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='115' viewBox='0 0 100 115'><polygon points='50,5 93,28 93,87 50,110 7,87 7,28' fill='none' stroke='%23f59e0b' stroke-width='1.2' opacity='.35'/></svg>");
+    background-size: 100px 115px;
     mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
     -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+    animation: hex-drift 60s linear infinite;
 }
-[data-theme="dark"] body::after { opacity: .15; }
+[data-theme="dark"] body::after { opacity: .18; }
+[data-theme="dark"] .sidebar { background: rgba(22,26,35,.92); border-right: 1px solid rgba(255,255,255,.06); }
 h1, h2, h3, h4 {
     font-family: 'Plus Jakarta Sans', sans-serif;
     margin: 0; color: var(--text); letter-spacing: -.02em;
@@ -108,7 +110,7 @@ button, input, select { font-family: inherit; }
 @keyframes float-y { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
 @keyframes float-soft { 0%,100%{transform:translate(0,0) rotate(0);} 50%{transform:translate(4px,-8px) rotate(2deg);} }
 @keyframes shimmer { 0%{background-position:-200% 0;} 100%{background-position:200% 0;} }
-@keyframes hex-drift { 0%{background-position:0 0;} 100%{background-position:84px 96px;} }
+@keyframes hex-drift { from { background-position: 0 0; } to { background-position: 100px 115px; } }
 @keyframes ambient { 0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(-12deg);} }
 @keyframes wing-flap { 0%,100%{transform:scaleY(1);} 50%{transform:scaleY(.35);} }
 @keyframes pollen-fall {
@@ -216,7 +218,8 @@ button, input, select { font-family: inherit; }
 .layout { padding-top: 64px; min-height: 100vh; }
 .sidebar {
     position: fixed; top: 64px; left: 0; bottom: 0; width: 290px; z-index: 900;
-    background: var(--bg-soft); border-right: 1px solid var(--border);
+    background: rgba(255,254,245,.90); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(245,158,11,.2);
     padding: 24px; overflow-y: auto;
     transform: translateX(0); transition: transform .35s var(--easing);
 }
@@ -408,7 +411,8 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
 
 /* ---------- 11. CHARTS ---------- */
 .chart-card {
-    background: var(--card-solid); border: 1px solid var(--border);
+    background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
     border-radius: var(--radius); padding: 24px; margin-bottom: 22px;
     box-shadow: var(--shadow-sm); opacity: 0; animation-name: fadeUp; animation-duration: .6s; animation-timing-function: var(--easing); animation-fill-mode: forwards;
     transition: transform .35s var(--easing), box-shadow .35s var(--easing);
@@ -431,7 +435,8 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
 /* ---------- 12. WEATHER CARDS ---------- */
 .weather-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
 .weather-day {
-    background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--card); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border); border-radius: var(--radius);
     padding: 18px 14px; text-align: center; transition: all .3s var(--easing);
     opacity: 0; animation-name: fadeUp; animation-duration: .4s; animation-timing-function: var(--easing); animation-fill-mode: forwards;
 }
@@ -453,7 +458,8 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
 .control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
 .control-card {
     border-radius: var(--radius); padding: 24px;
-    background: var(--card-solid); border: 1px solid var(--border);
+    background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
     position: relative; overflow: hidden;
 }
 .control-card::before {
