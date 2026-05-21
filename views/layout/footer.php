@@ -27,10 +27,10 @@ window.MAYA = {
 </script>
 
 <!-- ===== Scripts statiques ===== -->
-<script src="assets/js/ui.js"></script>
-<script src="assets/js/charts.js"></script>
-<script src="assets/js/meteo.js"></script>
-<script src="assets/js/bees.js"></script>
+<script src="assets/js/ui.js?v=<?= filemtime(__DIR__ . '/../../assets/js/ui.js') ?>"></script>
+<script src="assets/js/charts.js?v=<?= filemtime(__DIR__ . '/../../assets/js/charts.js') ?>"></script>
+<script src="assets/js/meteo.js?v=<?= filemtime(__DIR__ . '/../../assets/js/meteo.js') ?>"></script>
+<script src="assets/js/bees.js?v=<?= filemtime(__DIR__ . '/../../assets/js/bees.js') ?>"></script>
 
 </body>
 </html>
