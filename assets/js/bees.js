@@ -4,7 +4,6 @@
  * ============================================================ */
 
 (function () {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const BEE_SVG = `
         <svg class="bee-svg" viewBox="0 0 64 44" xmlns="http://www.w3.org/2000/svg">

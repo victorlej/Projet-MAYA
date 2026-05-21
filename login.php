@@ -269,10 +269,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .footer-note span { color: var(--honey-600); font-weight: 600; }
 
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-            .bee-layer, .pollen-layer { display: none; }
-        }
     </style>
 </head>
 <body>
@@ -357,7 +353,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         // Particules de pollen générées en JS
         (function () {
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             const layer = document.getElementById('pollen-layer');
             const count = window.innerWidth < 768 ? 16 : 32;
             for (let i = 0; i < count; i++) {

@@ -159,10 +159,6 @@ button, input, select { font-family: inherit; }
     animation: pollen-fall var(--dur, 14s) linear infinite;
     opacity: .85;
 }
-@media (prefers-reduced-motion: reduce) {
-    .bee-layer, .pollen-layer { display: none; }
-    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-}
 
 /* ---------- 4. TOPBAR ---------- */
 .topbar {
