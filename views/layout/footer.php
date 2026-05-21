@@ -13,6 +13,8 @@
 
     <div class="chat-messages" id="chat-messages"></div>
 
+    <div class="chat-suggestions" id="chat-suggestions"></div>
+
     <div class="chat-footer">
         <textarea class="chat-input" id="chat-input" rows="1"
                   placeholder="Ex : Ma ruche est-elle en bonne santé ?"></textarea>
@@ -159,14 +161,56 @@ window.MAYA = {
         return '🐝 Je peux vous renseigner sur la **température**, l\'**humidité**, le **poids**, la **luminosité** ou l\'**état général** de votre ruche. Que souhaitez-vous savoir ?';
     }
 
+    // --- Suggestions ---
+    const SUGGESTIONS = {
+        default: ['🐝 État de la ruche ?', '🌡️ Température ?', '💧 Humidité ?', '⚖️ Poids du miel ?', '☀️ Activité ?'],
+        temp:    ['💧 Humidité ?', '⚖️ Poids du miel ?', '🐝 État général ?'],
+        hum:     ['🌡️ Température ?', '⚖️ Poids du miel ?', '🐝 État général ?'],
+        poids:   ['🌡️ Température ?', '💧 Humidité ?', '🍯 Conseils récolte ?'],
+        lum:     ['🐝 État de la ruche ?', '🌡️ Température ?', '⛅ Voir la météo ?'],
+        etat:    ['🌡️ Température ?', '⚖️ Poids du miel ?', '⛅ Voir la météo ?'],
+        meteo:   ['🐝 État de la ruche ?', '🌡️ Température ?', '💧 Humidité ?'],
+        action:  ['🐝 État de la ruche ?', '🌡️ Température ?', '⚖️ Poids du miel ?'],
+    };
+
+    const suggBox = document.getElementById('chat-suggestions');
+
+    function showSuggestions(topic = 'default') {
+        suggBox.innerHTML = '';
+        (SUGGESTIONS[topic] || SUGGESTIONS.default).forEach((label, i) => {
+            const b = document.createElement('button');
+            b.className = 'chat-sugg';
+            b.textContent = label;
+            b.style.animationDelay = (i * 0.06) + 's';
+            b.addEventListener('click', () => sendText(label.replace(/^[\u{1F300}-\u{1FFFF}\s]+/u, '').trim()));
+            suggBox.appendChild(b);
+        });
+    }
+
+    function clearSuggestions() { suggBox.innerHTML = ''; }
+
+    function topicOf(text) {
+        const s = text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        if (/temp|chaud|froid|°/.test(s))               return 'temp';
+        if (/humid|eau|hygro/.test(s))                   return 'hum';
+        if (/poids|miel|kg|recolte|essaim|conseil/.test(s)) return 'poids';
+        if (/lumin|soleil|activit|jour|nuit/.test(s))    return 'lum';
+        if (/etat|sante|general|bien|ok|ruche|alerte/.test(s)) return 'etat';
+        if (/meteo|pluie|vent|prevision/.test(s))        return 'meteo';
+        if (/trappe|buzz|alarm|action/.test(s))          return 'action';
+        return 'default';
+    }
+
     // --- UI ---
     function toggleChat() {
         open = !open;
         panel.classList.toggle('open', open);
         btn.classList.toggle('open', open);
         if (open) {
-            if (msgBox.children.length === 0)
-                addMsg('ai', '🐝 Bonjour ! Je suis MAYA, votre assistante apicole. Demandez-moi l\'état de votre ruche, la température, le poids ou autre chose !');
+            if (msgBox.children.length === 0) {
+                addMsg('ai', '🐝 Bonjour ! Je suis MAYA, votre assistante apicole. Que voulez-vous savoir sur votre ruche ?');
+                showSuggestions('default');
+            }
             setTimeout(() => input.focus(), 350);
         }
     }
@@ -193,17 +237,23 @@ window.MAYA = {
         if (t) t.remove();
     }
 
-    function send() {
-        const text = input.value.trim();
+    function sendText(text) {
         if (!text) return;
+        clearSuggestions();
         input.value = '';
         input.style.height = 'auto';
         addMsg('user', text);
         showTyping();
+        const topic = topicOf(text);
         setTimeout(() => {
             hideTyping();
             addMsg('ai', reply(text));
+            showSuggestions(topic);
         }, 500 + Math.random() * 300);
+    }
+
+    function send() {
+        sendText(input.value.trim());
     }
 
     btn.addEventListener('click', toggleChat);

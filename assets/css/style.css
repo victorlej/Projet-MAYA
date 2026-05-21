@@ -377,6 +377,15 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
 .metric-unit { font-size: 1rem; font-weight: 600; color: var(--text-soft); margin-left: 4px; }
 .metric-trend { font-size: .78rem; font-weight: 600; margin-top: 8px; color: var(--text-soft); }
 
+.metric-bar { height: 5px; border-radius: 3px; background: var(--border); margin-top: 14px; overflow: hidden; }
+.metric-bar-fill {
+    height: 100%; border-radius: 3px; width: 0%;
+    background: var(--honey-grad);
+    transition: width 1.4s cubic-bezier(.4,0,.2,1);
+}
+.metric.alert-temp .metric-bar-fill { background: linear-gradient(90deg, var(--red), #ff8080); }
+.metric.alert-hum  .metric-bar-fill { background: linear-gradient(90deg, var(--honey-500), var(--honey-300)); }
+
 .metric.alert-temp { border-color: var(--red); background: linear-gradient(135deg, rgba(239,68,68,.08), var(--card)); }
 .metric.alert-temp .metric-value { color: var(--red); }
 .metric.alert-temp .metric-icon { background: rgba(239,68,68,.15); }
@@ -731,3 +740,24 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
     .chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 90px; }
     .chat-btn   { bottom: 20px; right: 16px; }
 }
+
+/* ---------- 20. CHAT SUGGESTIONS ---------- */
+.chat-suggestions {
+    padding: 8px 16px 10px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+    border-top: 1px solid rgba(245,158,11,.12);
+    flex-shrink: 0;
+}
+.chat-sugg {
+    padding: 5px 13px; border-radius: 100px; font-size: .76rem; font-weight: 600;
+    background: rgba(245,158,11,.10); color: var(--honey-700);
+    border: 1.5px solid rgba(245,158,11,.22); cursor: pointer;
+    transition: all .22s var(--easing); white-space: nowrap; font-family: inherit;
+    animation: pop .35s var(--bounce) both;
+}
+.chat-sugg:nth-child(2) { animation-delay: .05s; }
+.chat-sugg:nth-child(3) { animation-delay: .10s; }
+.chat-sugg:nth-child(4) { animation-delay: .15s; }
+.chat-sugg:nth-child(5) { animation-delay: .20s; }
+.chat-sugg:hover { background: var(--honey-grad); color: white; border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(245,158,11,.35); }
+[data-theme="dark"] .chat-sugg { color: var(--honey-300); background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.18); }

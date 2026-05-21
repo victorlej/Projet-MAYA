@@ -1,33 +1,27 @@
 <section id="dashboard" class="tab-panel active">
 
     <div class="grid-metrics">
-        <div class="card metric clickable <?= $alert_temp ? 'alert-temp' : '' ?> delay-1"
-             onclick="openAnalysis('temp', <?= (float)$data['temp'] ?>)">
-            <div class="metric-head"><span>Température</span><span class="metric-icon">🌡️</span></div>
-            <div class="metric-value"><?= e((string)$data['temp']) ?><span class="metric-unit">°C</span></div>
-            <div class="metric-trend"><?= $alert_temp ? '⚠️ Hors plage idéale' : '✓ Plage normale' ?></div>
+        <?php
+        $metrics = [
+            ['id'=>'temp',  'label'=>'Température', 'icon'=>'🌡️', 'val'=>$data['temp'],  'unit'=>'°C',  'class'=>$alert_temp?'alert-temp':'', 'trend'=>$alert_temp?'⚠️ Hors plage idéale':'✓ Plage normale',   'pct'=>min(100,max(0,round($data['temp']/50*100))),  'delay'=>1],
+            ['id'=>'hum',   'label'=>'Humidité',    'icon'=>'💧', 'val'=>$data['hum'],   'unit'=>'%',   'class'=>$alert_hum?'alert-hum':'',   'trend'=>$alert_hum?'⚠️ Saturation':'✓ Hygrométrie OK',           'pct'=>(int)$data['hum'],                           'delay'=>2],
+            ['id'=>'poids', 'label'=>'Poids',        'icon'=>'⚖️', 'val'=>$data['poids'], 'unit'=>'kg',  'class'=>'',                          'trend'=>'Suivi pondéral',                                         'pct'=>min(100,max(0,round($data['poids']/80*100))), 'delay'=>3],
+            ['id'=>'lum',   'label'=>'Luminosité',   'icon'=>'☀️', 'val'=>$data['lum'],   'unit'=>'%',   'class'=>'',                          'trend'=>$data['lum']>50?'Activité diurne':'Repos / nuit',         'pct'=>(int)$data['lum'],                           'delay'=>4],
+        ];
+        foreach ($metrics as $m): ?>
+        <div class="card metric clickable <?= $m['class'] ?> delay-<?= $m['delay'] ?>"
+             onclick="openAnalysis('<?= $m['id'] ?>', <?= (float)$m['val'] ?>)">
+            <div class="metric-head">
+                <span><?= $m['label'] ?></span>
+                <span class="metric-icon"><?= $m['icon'] ?></span>
+            </div>
+            <div class="metric-value" data-val="<?= (float)$m['val'] ?>" data-dec="<?= strlen(strstr((string)$m['val'], '.')) > 1 ? strlen(strstr((string)$m['val'], '.')) - 1 : 0 ?>">
+                <span class="metric-num">0</span><span class="metric-unit"><?= $m['unit'] ?></span>
+            </div>
+            <div class="metric-trend"><?= $m['trend'] ?></div>
+            <div class="metric-bar"><div class="metric-bar-fill" data-pct="<?= $m['pct'] ?>"></div></div>
         </div>
-
-        <div class="card metric clickable <?= $alert_hum ? 'alert-hum' : '' ?> delay-2"
-             onclick="openAnalysis('hum', <?= (float)$data['hum'] ?>)">
-            <div class="metric-head"><span>Humidité</span><span class="metric-icon">💧</span></div>
-            <div class="metric-value"><?= e((string)$data['hum']) ?><span class="metric-unit">%</span></div>
-            <div class="metric-trend"><?= $alert_hum ? '⚠️ Saturation' : '✓ Hygrométrie OK' ?></div>
-        </div>
-
-        <div class="card metric clickable delay-3"
-             onclick="openAnalysis('poids', <?= (float)$data['poids'] ?>)">
-            <div class="metric-head"><span>Poids</span><span class="metric-icon">⚖️</span></div>
-            <div class="metric-value"><?= e((string)$data['poids']) ?><span class="metric-unit">kg</span></div>
-            <div class="metric-trend">Suivi pondéral</div>
-        </div>
-
-        <div class="card metric clickable delay-4"
-             onclick="openAnalysis('lum', <?= (float)$data['lum'] ?>)">
-            <div class="metric-head"><span>Luminosité</span><span class="metric-icon">☀️</span></div>
-            <div class="metric-value"><?= e((string)$data['lum']) ?><span class="metric-unit">%</span></div>
-            <div class="metric-trend"><?= $data['lum'] > 50 ? 'Activité diurne' : 'Repos / nuit' ?></div>
-        </div>
+        <?php endforeach; ?>
     </div>
 
     <div class="filters-bar">

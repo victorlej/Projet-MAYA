@@ -122,3 +122,33 @@ function exportCSV() {
 if (window.MAYA && window.MAYA.refreshMs) {
     setTimeout(() => location.reload(), window.MAYA.refreshMs);
 }
+
+/* ---------- Count-up sur les valeurs métriques ---------- */
+function animateCountUp(el, target, decimals, duration) {
+    const start = performance.now();
+    function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = (target * ease).toFixed(decimals);
+        if (p < 1) requestAnimationFrame(tick);
+        else el.textContent = target.toFixed(decimals);
+    }
+    requestAnimationFrame(tick);
+}
+
+/* ---------- Barres de progression + count-up au chargement ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+    // Décalage pour laisser les animations CSS d'entrée se terminer
+    setTimeout(() => {
+        document.querySelectorAll('.metric-value[data-val]').forEach(el => {
+            const target   = parseFloat(el.dataset.val);
+            const decimals = parseInt(el.dataset.dec) || 0;
+            const numEl    = el.querySelector('.metric-num');
+            if (numEl && !isNaN(target)) animateCountUp(numEl, target, decimals, 1100);
+        });
+
+        document.querySelectorAll('.metric-bar-fill[data-pct]').forEach(bar => {
+            bar.style.width = bar.dataset.pct + '%';
+        });
+    }, 400);
+});
