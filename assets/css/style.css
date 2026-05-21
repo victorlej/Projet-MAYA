@@ -348,7 +348,7 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
 }
 .card.solid { background: var(--card-solid); }
 
-.metric { position: relative; overflow: hidden; animation: fadeUp .5s var(--easing) both; }
+.metric { position: relative; overflow: hidden; animation-name: fadeUp; animation-duration: .5s; animation-timing-function: var(--easing); animation-fill-mode: both; }
 .metric.clickable { cursor: pointer; }
 .metric.clickable:hover {
     transform: translateY(-4px);
@@ -410,7 +410,7 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
 .chart-card {
     background: var(--card-solid); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 24px; margin-bottom: 22px;
-    box-shadow: var(--shadow-sm); animation: fadeUp .5s var(--easing) both;
+    box-shadow: var(--shadow-sm); animation-name: fadeUp; animation-duration: .5s; animation-timing-function: var(--easing); animation-fill-mode: both;
     transition: transform .35s var(--easing), box-shadow .35s var(--easing);
     position: relative; overflow: hidden;
 }
@@ -433,7 +433,7 @@ details.collapsible[open] summary::after { transform: rotate(45deg); }
 .weather-day {
     background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 18px 14px; text-align: center; transition: all .3s var(--easing);
-    animation: fadeUp .4s var(--easing) both;
+    animation-name: fadeUp; animation-duration: .4s; animation-timing-function: var(--easing); animation-fill-mode: both;
 }
 .weather-day:hover { transform: translateY(-4px) scale(1.03); box-shadow: var(--shadow-md); border-color: var(--honey-500); }
 .weather-day .emoji { transition: transform .4s var(--bounce); }

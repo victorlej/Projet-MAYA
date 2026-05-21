@@ -3,7 +3,7 @@
 <section id="actions" class="tab-panel">
     <div class="control-grid">
 
-        <div class="control-card door">
+        <div class="control-card door anim-tilt delay-1">
             <h4>🚪 Trappe motorisée</h4>
             <p class="desc">Ouvrir ou fermer l'entrée de la ruche à distance.</p>
             <div class="door-status">
@@ -24,7 +24,7 @@
             </form>
         </div>
 
-        <div class="control-card alarm">
+        <div class="control-card alarm anim-tilt delay-2">
             <h4>🚨 Alarme sonore</h4>
             <p class="desc">Déclencher le buzzer pour signaler ou dissuader.</p>
             <form method="POST">

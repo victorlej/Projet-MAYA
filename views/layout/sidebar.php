@@ -1,6 +1,6 @@
 <aside class="sidebar" id="sidebar">
 
-    <div class="side-block">
+    <div class="side-block anim-slide">
         <div class="side-label">Mon rucher</div>
         <form method="POST">
             <select name="ruche_id" class="select" onchange="this.form.submit()">
@@ -17,7 +17,7 @@
         </form>
     </div>
 
-    <details class="collapsible">
+    <details class="collapsible anim-slide delay-1">
         <summary>Associer une ruche</summary>
         <div class="details-body">
             <form method="POST">

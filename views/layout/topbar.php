@@ -1,4 +1,4 @@
-<header class="topbar">
+<header class="topbar anim-fade">
     <div class="topbar-left">
         <button class="menu-btn" onclick="toggleSidebar()" aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
