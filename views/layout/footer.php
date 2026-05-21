@@ -30,6 +30,7 @@ window.MAYA = {
 <script src="assets/js/ui.js"></script>
 <script src="assets/js/charts.js"></script>
 <script src="assets/js/meteo.js"></script>
+<script src="assets/js/bees.js"></script>
 
 </body>
 </html>
